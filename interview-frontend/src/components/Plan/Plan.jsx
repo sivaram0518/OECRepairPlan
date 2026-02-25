@@ -1,10 +1,11 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useParams } from "react-router-dom";
 import {
   addProcedureToPlan,
   getPlanProcedures,
   getProcedures,
   getUsers,
+  getPlanProcedureUsers,
 } from "../../api/api";
 import Layout from '../Layout/Layout';
 import ProcedureItem from "./ProcedureItem/ProcedureItem";
@@ -15,12 +16,14 @@ const Plan = () => {
   const [procedures, setProcedures] = useState([]);
   const [planProcedures, setPlanProcedures] = useState([]);
   const [users, setUsers] = useState([]);
+  const [planProcedureUsers, setPlanProcedureUsers] = useState([]);
 
   useEffect(() => {
     (async () => {
       var procedures = await getProcedures();
       var planProcedures = await getPlanProcedures(id);
       var users = await getUsers();
+      var planProcedureUsers = await getPlanProcedureUsers(id);
 
       var userOptions = [];
       users.map((u) => userOptions.push({ label: u.name, value: u.userId }));
@@ -28,28 +31,34 @@ const Plan = () => {
       setUsers(userOptions);
       setProcedures(procedures);
       setPlanProcedures(planProcedures);
+      setPlanProcedureUsers(planProcedureUsers);
     })();
   }, [id]);
 
-  const handleAddProcedureToPlan = async (procedure) => {
-    const hasProcedureInPlan = planProcedures.some((p) => p.procedureId === procedure.procedureId);
-    if (hasProcedureInPlan) return;
+const handleAddProcedureToPlan = useCallback(
+    async (procedure) => {
+        const hasProcedureInPlan = planProcedures.some(
+            (p) => p.procedureId === procedure.procedureId
+        );
+        if (hasProcedureInPlan) return;
 
-    await addProcedureToPlan(id, procedure.procedureId);
-    setPlanProcedures((prevState) => {
-      return [
-        ...prevState,
-        {
-          planId: id,
-          procedureId: procedure.procedureId,
-          procedure: {
-            procedureId: procedure.procedureId,
-            procedureTitle: procedure.procedureTitle,
-          },
-        },
-      ];
-    });
-  };
+        await addProcedureToPlan(id, procedure.procedureId);
+        setPlanProcedures((prevState) => {
+            return [
+                ...prevState,
+                {
+                    planId: id,
+                    procedureId: procedure.procedureId,
+                    procedure: {
+                        procedureId: procedure.procedureId,
+                        procedureTitle: procedure.procedureTitle,
+                    },
+                },
+            ];
+        });
+    },
+    [id, planProcedures]
+);
 
   return (
     <Layout>
@@ -82,8 +91,11 @@ const Plan = () => {
                       {planProcedures.map((p) => (
                         <PlanProcedureItem
                           key={p.procedure.procedureId}
+                          planId={id}
                           procedure={p.procedure}
                           users={users}
+                          planProcedureUsers={planProcedureUsers}
+                          setPlanProcedureUsers={setPlanProcedureUsers}
                         />
                       ))}
                     </div>

@@ -65,3 +65,65 @@ export const getUsers = async () => {
 
     return await response.json();
 };
+
+export const getPlanProcedureUsers = async (planId) => {
+    const url = `${api_url}/PlanProcedureUser?$filter=planId eq ${planId}&$expand=user`;
+    const response = await fetch(url, {
+        method: "GET",
+    });
+
+    if (!response.ok) throw new Error("Failed to get plan procedure users");
+
+    return await response.json();
+};
+
+export const assignUserToProcedure = async (planId, procedureId, userId) => {
+    const url = `${api_url}/PlanProcedureUser/AssignUserToProcedure`;
+    const command = { planId, procedureId, userId };
+    const response = await fetch(url, {
+        method: "POST",
+        headers: {
+            Accept: "application/json",
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify(command),
+    });
+
+    if (!response.ok) throw new Error("Failed to assign user to procedure");
+
+    return true;
+};
+
+export const removeUserFromProcedure = async (planId, procedureId, userId) => {
+    const url = `${api_url}/PlanProcedureUser/RemoveUserFromProcedure`;
+    const command = { planId, procedureId, userId };
+    const response = await fetch(url, {
+        method: "POST",
+        headers: {
+            Accept: "application/json",
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify(command),
+    });
+
+    if (!response.ok) throw new Error("Failed to remove user from procedure");
+
+    return true;
+};
+
+export const removeAllUsersFromProcedure = async (planId, procedureId) => {
+    const url = `${api_url}/PlanProcedureUser/RemoveAllUsersFromProcedure`;
+    const command = { planId, procedureId };
+    const response = await fetch(url, {
+        method: "POST",
+        headers: {
+            Accept: "application/json",
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify(command),
+    });
+
+    if (!response.ok) throw new Error("Failed to remove all users from procedure");
+
+    return true;
+};
